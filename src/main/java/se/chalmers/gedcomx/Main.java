@@ -1,13 +1,10 @@
 package se.chalmers.gedcomx;
 
 import org.gedcomx.Gedcomx;
-import org.gedcomx.fileformat.DefaultXMLSerialization;
 import org.gedcomx.util.RecordSetIterator;
 
 import javax.xml.stream.XMLStreamException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 
 /**
  * Created by Leif on 2017-02-27.
@@ -18,39 +15,20 @@ public class Main {
         String filepath = args[0];
 
         try {
-            ImageLocator locator = new ImageLocator();
-            YearExtractor yearExtractor = new YearExtractor();
+            RecordAccumulator accumulator = new RecordAccumulator();
 
             RecordSetIterator it = new RecordSetIterator(filepath);
-            while(it.hasNext()){
+            int iter = 0;
+            while(it.hasNext() && iter < 10000){
+                ++iter;
                 Gedcomx g = it.next();
-                String imageName = locator.extractImageName(g);
-                String year = yearExtractor.extractYear(g);
-                System.out.println(imageName + ", " + year);
-                if(year == null) {
-                    writeXml(g);
-                    System.err.println("Encountered null year!");
-                    return;
-                }
+                accumulator.addItem(g);
             }
             it.close();
+
+            accumulator.printAll();
         } catch (XMLStreamException | IOException e) {
             e.printStackTrace();
         }
     }
-
-    /**
-     * Serializes a Gedcomx object as XML. Useful for debugging.
-     * */
-    private static void writeXml(Gedcomx g) {
-        String outfile = "temp.xml";
-        try{
-            OutputStream outstream = new FileOutputStream(outfile);
-            DefaultXMLSerialization x = new DefaultXMLSerialization(true, Gedcomx.class);
-            x.serialize(g, outstream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
 }

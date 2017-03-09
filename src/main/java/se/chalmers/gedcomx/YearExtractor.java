@@ -22,6 +22,7 @@ public class YearExtractor {
                 return extractMarriageYear(g);
             case "Baptism":
             case "Birth":
+            case "Burial":
             case "Death":
                 return extractPrimaryYear(g);
             case "Other":
