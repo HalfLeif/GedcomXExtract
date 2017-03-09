@@ -26,9 +26,12 @@ public class Main {
                 Gedcomx g = it.next();
                 String imageName = locator.extractImageName(g);
                 String year = yearExtractor.extractYear(g);
-                System.out.println(imageName);
-                System.out.println(year);
-                break;
+                System.out.println(imageName + ", " + year);
+                if(year == null) {
+                    writeXml(g);
+                    System.err.println("Encountered null year!");
+                    return;
+                }
             }
             it.close();
         } catch (XMLStreamException | IOException e) {
