@@ -2,6 +2,7 @@ package se.chalmers.gedcomx;
 
 import org.gedcomx.Gedcomx;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -15,18 +16,19 @@ public class RecordAccumulator {
     private final ImageLocator imageLocator = new ImageLocator();
     private final YearExtractor yearExtractor = new YearExtractor();
 
-    public void printAll() {
+    /**
+     * Prints content to this Appendable (e.g. System.out, StringBuilder or PrintWriter).
+     * */
+    public void printAll(Appendable builder) throws IOException {
         for (String imageName : imageToYear.keySet()) {
-            StringBuilder builder = new StringBuilder();
             builder.append(imageName);
 
             Set<String> years = imageToYear.get(imageName);
             appendYears(builder, years);
-
-            System.out.println(builder.toString());
+            builder.append('\n');
         }
     }
-    private void appendYears(StringBuilder builder, Set<String> years) {
+    private void appendYears(Appendable builder, Set<String> years) throws IOException {
         builder.append(", [");
         boolean firstIteration = true;
         for (String year : years) {
