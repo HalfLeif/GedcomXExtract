@@ -27,9 +27,12 @@ public class YearExtractor {
             case "Death":
                 return extractPrimaryYear(g);
             case "Other":
+            case "Unspecified":
                 return null;
             default:
                 System.err.println("Unknown event type " + eventType);
+                Debug.writeXml(g);
+                System.exit(11);
         }
         return null;
     }
