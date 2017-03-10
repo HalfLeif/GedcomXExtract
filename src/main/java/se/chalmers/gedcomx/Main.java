@@ -19,7 +19,8 @@ public class Main {
 
             RecordSetIterator it = new RecordSetIterator(filepath);
             int iter = 0;
-            while(it.hasNext() && iter < 10000){
+            while(it.hasNext() //&& iter < 10000
+                    ){
                 ++iter;
                 Gedcomx g = it.next();
                 accumulator.addItem(g);

@@ -20,6 +20,7 @@ public class Debug {
             OutputStream outstream = new FileOutputStream(outfile);
             DefaultXMLSerialization x = new DefaultXMLSerialization(true, Gedcomx.class);
             x.serialize(g, outstream);
+            System.err.println("Wrote to "+outfile);
         } catch (IOException e) {
             e.printStackTrace();
         }

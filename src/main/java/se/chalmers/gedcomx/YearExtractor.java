@@ -1,6 +1,7 @@
 package se.chalmers.gedcomx;
 
 import org.gedcomx.Gedcomx;
+import org.gedcomx.common.ResourceReference;
 import org.gedcomx.common.URI;
 import org.gedcomx.conclusion.Date;
 import org.gedcomx.conclusion.Fact;
@@ -45,11 +46,44 @@ public class YearExtractor {
     private String extractEventType(Gedcomx g) {
         return extractField(g.getFields(), "EVENT_TYPE");
     }
+    /**
+     * Returns the first principal person.
+     * Note that for marriage records there are two principal persons.
+     * */
+    private Person getPrincipalPerson(Gedcomx g) {
+        for (Person person : g.getPersons()) {
+            if (person.getPrincipal()) {
+                return person;
+            }
+        }
+        return null;
+    }
+    /**
+     * Returns true iff the reference refers to this person.
+     * Example: person id: "p_14191196568", ref: "#p_14191196568"
+     * */
+    private boolean isSamePerson(Person person, ResourceReference ref) {
+        if (person == null || ref == null) return false;
+        return ref.toString().contains(person.getId());
+    }
     private String extractMarriageYear(Gedcomx g) {
+        Person principalPerson = getPrincipalPerson(g);
         for (Relationship relationship : g.getRelationships()) {
-            for (Fact fact : relationship.getFacts()) {
-                Date date = fact.getDate();
-                return extractField(date.getFields(), "EVENT_YEAR");
+            // Possible relationships:
+            // - Couple (between newly-weds)
+            // - Couple (between parents)
+            // - ParentChild
+            if (coupleURI.equals(relationship.getType()) && isSamePerson(principalPerson, relationship.getPerson1())){
+                if (relationship.getFacts() == null) {
+                    Debug.writeXml(g);
+                }
+                for (Fact fact : relationship.getFacts()) {
+                    Date date = fact.getDate();
+                    if (date == null) {
+                        continue;
+                    }
+                    return extractField(date.getFields(), "EVENT_YEAR");
+                }
             }
         }
         return null;
@@ -58,15 +92,15 @@ public class YearExtractor {
      * Works for case Baptism, Birth and Death.
      * */
     private String extractPrimaryYear(Gedcomx g) {
-        // May actually exist more than one person (like parents) but first person should be the principal person.
-        Person firstPerson = g.getPerson();
-        if (!firstPerson.getPrincipal()) {
-            System.err.println("Expected first person to be principal!");
-            return null;
-        }
+        // May actually exist more than one person (like parents, spouse)
+        // but principal person is the important one.
+        Person principalPerson = getPrincipalPerson(g);
         String result = null;
-        for (Fact fact : firstPerson.getFacts()) {
+        for (Fact fact : principalPerson.getFacts()) {
             Date date = fact.getDate();
+            if (date == null) {
+                continue;
+            }
             String event_year = extractField(date.getFields(), "EVENT_YEAR");
             if (event_year != null && fact.getPrimary()) {
                 return event_year;
@@ -80,4 +114,5 @@ public class YearExtractor {
 
 //    private final URI baptismUri = new URI("http://gedcomx.org/Baptism");
     private final URI birthURI = new URI("http://gedcomx.org/Birth");
+    private final URI coupleURI = new URI("http://gedcomx.org/Couple");
 }
