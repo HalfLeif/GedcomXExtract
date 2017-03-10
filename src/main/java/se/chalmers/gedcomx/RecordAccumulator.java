@@ -14,7 +14,6 @@ public class RecordAccumulator {
     private final Map<String, Set<String>> imageToYear = new HashMap<>();
     private final ImageLocator imageLocator = new ImageLocator();
     private final YearExtractor yearExtractor = new YearExtractor();
-    private final String noValue = "empty";
 
     public void printAll() {
         for (String imageName : imageToYear.keySet()) {
@@ -31,11 +30,6 @@ public class RecordAccumulator {
         builder.append(", [");
         boolean firstIteration = true;
         for (String year : years) {
-            if (years.size() > 0 && noValue.equals(year)) {
-                // This set has non-empty values, use them instead.
-                continue;
-            }
-
             if (firstIteration) {
                 firstIteration = false;
             } else {
@@ -49,11 +43,10 @@ public class RecordAccumulator {
     public void addItem(Gedcomx g) {
         String imageName = imageLocator.extractImageName(g);
         String year = yearExtractor.extractYear(g);
-        if (year == null) {
-            year = noValue;
+        Set<String> value = findOrInsert(imageName);
+        if (year != null) {
+            value.add(year);
         }
-
-        findOrInsert(imageName).add(year);
     }
 
     private Set<String> findOrInsert(String key) {
