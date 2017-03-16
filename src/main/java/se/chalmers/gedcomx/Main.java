@@ -12,6 +12,8 @@ import java.io.*;
  */
 public class Main {
 
+    private static final double TEST_RATIO = 0.10;
+
     /**
      * Should pass exactly two arguments to main:
      * 1. Directory of the records containing collections like 1647578, e.g. "sweden/records/".
@@ -21,13 +23,16 @@ public class Main {
      * */
     public static void main(String[] args){
         File recordsDir = new File(args[0]);
-        File outDir = new File(args[1]);
-        outDir.mkdirs();
+        File outputDir = new File(args[1]);
+        File outputTestDir = new File(outputDir, "test");
+        File outputTrainDir = new File(outputDir, "train");
+        outputTestDir.mkdirs();
+        outputTrainDir.mkdirs();
 
         for (File collection : recordsDir.listFiles()) {
             if (collection.isDirectory()) {
                 try {
-                    parseCollection(collection, outDir);
+                    parseCollection(collection, outputTestDir, outputTrainDir);
                 } catch (IOException | XMLStreamException e) {
                     e.printStackTrace();
                     return;
@@ -40,7 +45,7 @@ public class Main {
      * Aggregates all relevant labels of this collection into a single file
      * which is created in `outputDir`.
      * */
-    private static void parseCollection(File collectionDir, File outputDir)
+    private static void parseCollection(File collectionDir, File outputTestDir, File outputTrainDir)
             throws IOException, XMLStreamException {
         String collectionName = collectionDir.getName();
         System.out.println("Collection "+ collectionName);
@@ -54,17 +59,22 @@ public class Main {
             }
         }
 
-        File outfile = new File(outputDir, collectionName + ".csv");
-        writeLabels(collectionLabels, outfile);
+        File testfile = new File(outputTestDir, collectionName + ".csv");
+        File trainfile = new File(outputTrainDir, collectionName + ".csv");
+        writeLabels(collectionLabels, testfile, trainfile);
     }
 
-    private static void writeLabels(RecordAccumulator labels, File outfile)
+    private static void writeLabels(RecordAccumulator labels, File testfile, File trainfile)
             throws IOException {
-        outfile.createNewFile();
-        PrintWriter writer = new PrintWriter(outfile);
-        labels.printAll(writer);
-        writer.close();
-        System.out.println("\tWrote records to " + outfile.getName());
+        testfile.createNewFile();
+        trainfile.createNewFile();
+
+        PrintWriter testWriter = new PrintWriter(testfile);
+        PrintWriter trainWriter = new PrintWriter(trainfile);
+        labels.outputLabels(trainWriter, testWriter, TEST_RATIO);
+        testWriter.close();
+        trainWriter.close();
+        System.out.println("\tWrote records to " + testfile.getName());
     }
 
     /**

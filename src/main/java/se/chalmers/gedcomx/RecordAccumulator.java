@@ -3,10 +3,7 @@ package se.chalmers.gedcomx;
 import org.gedcomx.Gedcomx;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Created by Leif on 2017-03-09.
@@ -15,21 +12,37 @@ public class RecordAccumulator {
     private final Map<String, Set<String>> imageToYear = new HashMap<>();
     private final ImageLocator imageLocator = new ImageLocator();
     private final YearExtractor yearExtractor = new YearExtractor();
+    private final Random random = new Random(0);
+    private final String fieldSeparator = " | ";
 
     /**
      * Prints content to this Appendable (e.g. System.out, StringBuilder or PrintWriter).
      * */
-    public void printAll(Appendable builder) throws IOException {
+    public void outputAll(Appendable dataSet) throws IOException {
+        outputLabels(dataSet, null, 0.0);
+    }
+
+    /**
+     * Divides the labels into a training set and a test set.
+     * `testRatio` denotes how much of the data will go into the test set.
+     * */
+    public void outputLabels(Appendable trainSet, Appendable testSet, double testRatio) throws IOException {
         for (String imageName : imageToYear.keySet()) {
-            builder.append(imageName);
+            Appendable dataSet = trainSet;
+            if (random.nextDouble() < testRatio) {
+                dataSet = testSet;
+            }
+            dataSet.append(imageName);
+            dataSet.append(fieldSeparator);
 
             Set<String> years = imageToYear.get(imageName);
-            appendYears(builder, years);
-            builder.append('\n');
+            appendYears(dataSet, years);
+            dataSet.append('\n');
         }
     }
+
     private void appendYears(Appendable builder, Set<String> years) throws IOException {
-        builder.append(", [");
+        builder.append("[");
         boolean firstIteration = true;
         for (String year : years) {
             if (firstIteration) {
