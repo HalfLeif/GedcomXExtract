@@ -24,15 +24,17 @@ public class Main {
     public static void main(String[] args){
         File recordsDir = new File(args[0]);
         File outputDir = new File(args[1]);
-        File outputTestDir = new File(outputDir, "test");
-        File outputTrainDir = new File(outputDir, "train");
-        outputTestDir.mkdirs();
-        outputTrainDir.mkdirs();
+//        File outputTestDir = new File(outputDir, "test");
+//        File outputTrainDir = new File(outputDir, "train");
+//        outputTestDir.mkdirs();
+//        outputTrainDir.mkdirs();
+        File outputSubDir = new File(outputDir, "page_index");
+        outputSubDir.mkdirs();
 
         for (File collection : recordsDir.listFiles()) {
             if (collection.isDirectory()) {
                 try {
-                    parseCollection(collection, outputTestDir, outputTrainDir);
+                    parseCollection(collection, outputSubDir);
                 } catch (IOException | XMLStreamException e) {
                     e.printStackTrace();
                     return;
@@ -45,7 +47,7 @@ public class Main {
      * Aggregates all relevant labels of this collection into a single file
      * which is created in `outputDir`.
      * */
-    private static void parseCollection(File collectionDir, File outputTestDir, File outputTrainDir)
+    private static void parseCollection(File collectionDir, File outputSubDir)
             throws IOException, XMLStreamException {
         String collectionName = collectionDir.getName();
         System.out.println("Collection "+ collectionName);
@@ -59,22 +61,19 @@ public class Main {
             }
         }
 
-        File testfile = new File(outputTestDir, collectionName + ".csv");
-        File trainfile = new File(outputTrainDir, collectionName + ".csv");
-        writeLabels(collectionLabels, testfile, trainfile);
+        File indexfile = new File(outputSubDir, collectionName + ".csv");
+        writeLabels(collectionLabels, indexfile);
     }
 
-    private static void writeLabels(RecordAccumulator labels, File testfile, File trainfile)
+    private static void writeLabels(RecordAccumulator labels, File indexfile)
             throws IOException {
-        testfile.createNewFile();
-        trainfile.createNewFile();
+        indexfile.createNewFile();
 
-        PrintWriter testWriter = new PrintWriter(testfile);
-        PrintWriter trainWriter = new PrintWriter(trainfile);
-        labels.outputLabels(trainWriter, testWriter, TEST_RATIO);
+        PrintWriter testWriter = new PrintWriter(indexfile);
+        labels.outputAll(testWriter);
+//        labels.outputLabels(trainWriter, testWriter, TEST_RATIO);
         testWriter.close();
-        trainWriter.close();
-        System.out.println("\tWrote records to " + testfile.getName());
+        System.out.println("\tWrote records to " + indexfile.getName());
     }
 
     /**

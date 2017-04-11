@@ -10,6 +10,9 @@ import java.util.*;
  */
 public class RecordAccumulator {
     private final Map<String, Set<String>> imageToYear = new HashMap<>();
+    private final Map<String, String> imageToId = new HashMap<>();
+
+    private final ImageIdExtractor idExtractor = new ImageIdExtractor();
     private final ImageLocator imageLocator = new ImageLocator();
     private final YearExtractor yearExtractor = new YearExtractor();
     private final Random random = new Random(0);
@@ -37,6 +40,10 @@ public class RecordAccumulator {
 
             Set<String> years = imageToYear.get(imageName);
             appendYears(dataSet, years);
+            dataSet.append(fieldSeparator);
+
+            dataSet.append(imageToId.get(imageName));
+
             dataSet.append('\n');
         }
     }
@@ -62,6 +69,8 @@ public class RecordAccumulator {
         if (year != null) {
             value.add(year);
         }
+
+        imageToId.put(imageName, idExtractor.extractImageId(g, fieldSeparator));
     }
 
     private Set<String> findOrInsert(String key) {
