@@ -17,8 +17,7 @@ public class ImageIdExtractor {
         for (Field field : g.getFields()){
             for (FieldValue value : field.getValues()) {
                 switch(value.getLabelId()) {
-                    case "IMAGE_NBR":
-                    case "FS_FOLDER_IMAGE_SEQ":
+                    case "SORT_VALUE":
                         image_nbr = value.getText();
                         break;
                     case "WP_PARISH":
