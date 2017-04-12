@@ -18,6 +18,7 @@ public class ImageIdExtractor {
             for (FieldValue value : field.getValues()) {
                 switch(value.getLabelId()) {
                     case "SORT_VALUE":
+                    case "SORT_KEY":
                         image_nbr = value.getText();
                         break;
                     case "WP_PARISH":
